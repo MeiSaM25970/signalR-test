@@ -10,7 +10,7 @@ const Chat: FC = () => {
   const [messages, setMessages] = useState<{ user: string; text: string }[]>(
     []
   );
-
+  let room = "Room1";
   const joinUser = () => {
     function receive(user: string, text: string) {
       console.log(user + ": ", text);
@@ -27,11 +27,16 @@ const Chat: FC = () => {
 
     connect.on("ReceiveMessage", receive);
     connect.start();
-    console.log(connect);
+    if (connect) {
+      setMessages((perv) => [
+        ...perv,
+        { user: "admin", text: `you are join to ${room}` },
+      ]);
+    }
     setConnection(connect);
   };
   async function sendMessage() {
-    await connection?.invoke("SendMessenger", "Room1", username, message);
+    await connection?.invoke("SendMessenger", room, username, message);
   }
 
   return (
@@ -51,7 +56,6 @@ const Chat: FC = () => {
                 setShowChat(true);
               }}
             >
-              {" "}
               add user
             </button>
           </>
