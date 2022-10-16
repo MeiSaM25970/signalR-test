@@ -1,14 +1,22 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useState } from "react";
+import * as signalR from "@microsoft/signalr";
 import { createSignalRContext } from "react-signalr";
-import { SignalRContext } from "./App";
+
 const Chat: FC = () => {
   const [message, setMessage] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [showChat, setShowChat] = useState<boolean>(false);
   const [connection, setConnection] = useState<any>();
-  const signalR = require("@microsoft/signalr");
   const [messages, setMessages] = useState<{ user: string; text: string }[]>(
     []
+  );
+  const { useSignalREffect, Provider } = createSignalRContext();
+  useSignalREffect(
+    "event name",
+    (message) => {
+      console.log(message);
+    },
+    [messages]
   );
   let room = "Room1";
   const joinUser = () => {
@@ -22,9 +30,7 @@ const Chat: FC = () => {
         transport: signalR.HttpTransportType.WebSockets,
       })
       .configureLogging(signalR.LogLevel.Information)
-
       .build();
-
     connect.on("ReceiveMessage", receive);
     connect.start();
     if (connect) {

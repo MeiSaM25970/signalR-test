@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import {
   createSignalRContext, // SignalR
@@ -8,14 +7,14 @@ export const SignalRContext = createSignalRContext();
 
 function App() {
   return (
-    // <SignalRContext.Provider
-    //   connectEnabled={true}
-    //   // accessTokenFactory={() => token}
-    //   // dependencies={[token]} //remove previous connection and create a new connection if changed
-    //   url={"https://cls.mehraman.com/Messenger"}
-    // >
-    <Chat />
-    // </SignalRContext.Provider>
+    <SignalRContext.Provider
+      connectEnabled={true}
+      // accessTokenFactory={() => token}
+      // dependencies={[token]} //remove previous connection and create a new connection if changed
+      url={"https://cls.mehraman.com/Messenger"}
+    >
+      <Chat />
+    </SignalRContext.Provider>
   );
 }
 
