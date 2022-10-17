@@ -1,82 +1,113 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import { createSignalRContext } from "react-signalr";
+import axios from "axios";
 
 const Chat: FC = () => {
   const [message, setMessage] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
+  const [groupName, setGroupName] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   const [showChat, setShowChat] = useState<boolean>(false);
   const [connection, setConnection] = useState<any>();
   const [messages, setMessages] = useState<{ user: string; text: string }[]>(
     []
   );
-  const { useSignalREffect, Provider } = createSignalRContext();
-  useSignalREffect(
-    "event name",
-    (message) => {
-      console.log(message);
-    },
-    [messages]
-  );
-  let room = "Room1";
-  const joinUser = () => {
-    function receive(user: string, text: string) {
-      console.log(user + ": ", text);
-      setMessages((perv) => [...perv, { user, text }]);
+  const receiveMessage = (sender: string, text: string) => {
+    setMessages((perv) => [...perv, { user: sender, text: text }]);
+  };
+  const connectUser = async () => {
+    function join(groupName: string) {
+      console.log(groupName);
+      setMessages((perv) => [
+        ...perv,
+        { user: "admin", text: `you are join to ${groupName}` },
+      ]);
     }
-    var connect = new signalR.HubConnectionBuilder()
+    var connect = await new signalR.HubConnectionBuilder()
       .withUrl("https://cls.mehraman.com/Messenger", {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
-    connect.on("ReceiveMessage", receive);
-    connect.start();
-    if (connect) {
-      setMessages((perv) => [
-        ...perv,
-        { user: "admin", text: `you are join to ${room}` },
-      ]);
-    }
+    connect.on("JoinGroup", join);
+    connect.on("ReceiveMessage", receiveMessage);
+    await connect.start();
+
+    console.log(connect);
     setConnection(connect);
   };
+  useEffect(() => {
+    connectUser();
+  }, []);
+  const joinGroup = async () => {
+    await connection.invoke("JoinGroup", groupName);
+  };
   async function sendMessage() {
-    await connection?.invoke("SendMessenger", room, username, message);
+    await axios.post("https://cls.mehraman.com/api/Messenger/SendMessage", {
+      roomName: groupName,
+      sender: userName,
+      text: message,
+    });
+    setMessage("");
   }
 
   return (
     <div style={{ display: "flex", padding: 30 }}>
       <div style={{ width: "50%" }}>
-        {!showChat && (
-          <>
-            <input
-              type="text"
-              id="username"
-              onChange={(e) => setUsername(e.target.value)}
-              value={username}
-            />
-            <button
-              onClick={() => {
-                joinUser();
-                setShowChat(true);
-              }}
-            >
-              add user
-            </button>
-          </>
-        )}
-        {showChat && (
-          <>
-            <input
-              type="text"
-              id="messageText"
-              onChange={(e) => setMessage(e.target.value)}
-              value={message}
-            />
-            <button onClick={() => sendMessage()}> send </button>
-          </>
-        )}
+        <label htmlFor="groupName" style={{ marginBottom: "10px" }}>
+          Group Name :{" "}
+        </label>
+        <div>
+          <input
+            type="text"
+            id="groupName"
+            onChange={(e) => setGroupName(e.target.value)}
+            value={groupName}
+          />
+          <button
+            onClick={() => {
+              joinGroup();
+              setShowChat(true);
+            }}
+            style={{ marginLeft: "10px" }}
+          >
+            join
+          </button>
+        </div>
+
+        <label htmlFor="UserName" style={{ marginBottom: "10px" }}>
+          User Name :{" "}
+        </label>
+        <div>
+          <input
+            type="text"
+            id="UserName"
+            onChange={(e) => setUserName(e.target.value)}
+            value={userName}
+          />
+
+        </div>
+
+
+        <label htmlFor="messageText">Message: </label>
+
+        <div>
+          <textarea
+            id="messageText"
+            onChange={(e) => setMessage(e.target.value)}
+            value={message}
+            rows={15}
+          />
+        </div>
+
+        <button
+          onClick={() => {
+            sendMessage();
+          }}
+        >
+          {" "}
+          send{" "}
+        </button>
       </div>
       <div style={{ width: "50%" }}>
         {messages.map((item, index) => (
