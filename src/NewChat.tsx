@@ -75,10 +75,11 @@ export const NewChat: FC = () => {
                 />
               </div>
               <div className="input-group mt-2">
-                <div
+                <a
                   className="input-group-prepend"
                   style={{ cursor: "pointer" }}
                   onClick={joinGroup}
+                  href="#"
                 >
                   <span
                     className="input-group-text "
@@ -86,7 +87,7 @@ export const NewChat: FC = () => {
                   >
                     Join
                   </span>
-                </div>
+                </a>
                 <input
                   type="text"
                   className="form-control"
@@ -121,10 +122,7 @@ export const NewChat: FC = () => {
                         data-toggle="modal"
                         data-target="#view_info"
                       >
-                        <img
-                          src="https://bootdey.com/img/Content/avatar/avatar2.png"
-                          alt="avatar"
-                        />
+                        <img src="/avatar2.png" alt="avatar" />
                       </a>
                       <div className="chat-about">
                         <h6 className="m-b-0">{userName}</h6>
@@ -180,10 +178,7 @@ export const NewChat: FC = () => {
                               <span className="message-data-time">
                                 {msg.user}
                               </span>
-                              <img
-                                src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                                alt="avatar"
-                              />
+                              <img src="/avatar7.png" alt="avatar" />
                             </div>
                             <div className="message other-message float-right">
                               {msg.text}
