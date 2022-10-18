@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import moment from "moment";
 
@@ -11,12 +11,16 @@ export const NewChat: FC = () => {
   const [messages, setMessages] = useState<
     { user: string; text: string; date: Date }[]
   >([]);
+  const messagesListRef = useRef<HTMLDivElement>(null);
+
   const receiveMessage = useCallback((sender: string, text: string) => {
     setMessages((perv) => [
       ...perv,
       { user: sender, text: text, date: new Date() },
     ]);
-    scrollToBottom();
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
   }, []);
   const connectUser = useCallback(async () => {
     function join(groupName: string) {
@@ -38,7 +42,9 @@ export const NewChat: FC = () => {
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connect.on("JoinGroup", join);
-    connect.on("ReceiveMessage", receiveMessage);
+    connect.on("ReceiveMessage", (sender, text) => {
+      receiveMessage(sender, text);
+    });
     await connect.start();
 
     console.log(connect);
@@ -60,12 +66,23 @@ export const NewChat: FC = () => {
     setMessage("");
   }
   const scrollToBottom = () => {
-    const height: number | undefined =
-      document.getElementById("chatBox")?.scrollHeight;
-    document.getElementById("chatBox")?.scrollTo({
-      top: height,
-      behavior: "smooth",
-    });
+    // const height: number | undefined =
+    //   document.getElementById("chatBox")?.scrollHeight;
+    // if (height) {
+    //   const top = height + 170;
+    //   document.getElementById("chatBox")?.scrollTo({
+    //     top,
+    //     behavior: "smooth",
+    //   });
+    // }
+
+    const scroll =
+      messagesListRef?.current?.scrollHeight! -
+      messagesListRef?.current?.clientHeight! +
+      184;
+    messagesListRef.current?.scrollTo(80, scroll);
+
+    console.log(document.getElementById("chatBox")?.offsetHeight);
   };
   return (
     <div className="container">
@@ -124,7 +141,7 @@ export const NewChat: FC = () => {
               </ul>
             </div>
             {showChat && (
-              <div className="chat col-sm-12 col-md-6">
+              <div className="chat ">
                 <div className="chat-header clearfix">
                   <div className="row">
                     <div className="col-lg-6">
@@ -168,8 +185,8 @@ export const NewChat: FC = () => {
                   </div> */}
                   </div>
                 </div>
-                <div className="chat-history" id="chatBox">
-                  <ul className="m-b-0">
+                <div className="chat-history" ref={messagesListRef}>
+                  <ul className="m-b-0" id="chatBox">
                     {messages.map((msg, index) => {
                       if (msg.user === userName) {
                         return (
