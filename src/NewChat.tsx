@@ -1,7 +1,7 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import axios from "axios";
 import moment from "moment";
+
 export const NewChat: FC = () => {
   const [message, setMessage] = useState<string>("");
   const [groupName, setGroupName] = useState<string>("");
@@ -11,13 +11,14 @@ export const NewChat: FC = () => {
   const [messages, setMessages] = useState<
     { user: string; text: string; date: Date }[]
   >([]);
-  const receiveMessage = (sender: string, text: string) => {
+  const receiveMessage = useCallback((sender: string, text: string) => {
     setMessages((perv) => [
       ...perv,
       { user: sender, text: text, date: new Date() },
     ]);
-  };
-  const connectUser = async () => {
+    scrollToBottom();
+  }, []);
+  const connectUser = useCallback(async () => {
     function join(groupName: string) {
       console.log(groupName);
       setMessages((perv) => [
@@ -42,23 +43,30 @@ export const NewChat: FC = () => {
 
     console.log(connect);
     setConnection(connect);
-  };
+  }, [receiveMessage]);
   useEffect(() => {
     connectUser();
-  }, []);
+  }, [connectUser]);
   const joinGroup = async () => {
     await connection.invoke("JoinGroup", groupName);
     setShowChat(true);
   };
   async function sendMessage() {
-    await axios.post("https://cls.mehraman.com/api/Messenger/SendMessage", {
+    await connection.invoke("SendMessenger", {
       roomName: groupName,
       sender: userName,
       text: message,
     });
     setMessage("");
   }
-
+  const scrollToBottom = () => {
+    const height: number | undefined =
+      document.getElementById("chatBox")?.scrollHeight;
+    document.getElementById("chatBox")?.scrollTo({
+      top: height,
+      behavior: "smooth",
+    });
+  };
   return (
     <div className="container">
       <div className="row clearfix">
@@ -76,10 +84,13 @@ export const NewChat: FC = () => {
               </div>
               <div className="input-group mt-2">
                 <a
+                  href="/"
                   className="input-group-prepend"
                   style={{ cursor: "pointer" }}
-                  onClick={joinGroup}
-                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    joinGroup();
+                  }}
                 >
                   <span
                     className="input-group-text "
@@ -117,13 +128,13 @@ export const NewChat: FC = () => {
                 <div className="chat-header clearfix">
                   <div className="row">
                     <div className="col-lg-6">
-                      <a
-                        href="javascript:void(0);"
+                      <span
+                        // href="#"
                         data-toggle="modal"
                         data-target="#view_info"
                       >
                         <img src="/avatar2.png" alt="avatar" />
-                      </a>
+                      </span>
                       <div className="chat-about">
                         <h6 className="m-b-0">{userName}</h6>
                         <small>Online</small>
@@ -157,7 +168,7 @@ export const NewChat: FC = () => {
                   </div> */}
                   </div>
                 </div>
-                <div className="chat-history">
+                <div className="chat-history" id="chatBox">
                   <ul className="m-b-0">
                     {messages.map((msg, index) => {
                       if (msg.user === userName) {

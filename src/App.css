@@ -1,6 +1,8 @@
+@import '~antd/dist/antd.css';
+
 body{
   background-color: #f4f7f6;
-  margin-top:20px;
+padding: 20px;
 }
 .card {
   background: #fff;
@@ -90,7 +92,9 @@ body{
 
 .chat .chat-history {
   padding: 20px;
-  border-bottom: 2px solid #fff
+  border-bottom: 2px solid #fff;
+  height:600px;
+  overflow-x: auto
 }
 
 .chat .chat-history ul {
@@ -233,6 +237,7 @@ body{
       height: 300px;
       overflow-x: auto
   }
+  
 }
 
 @media only screen and (min-width: 768px) and (max-width: 992px) {

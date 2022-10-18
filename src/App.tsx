@@ -2,7 +2,6 @@ import "./App.css";
 import {
   createSignalRContext, // SignalR
 } from "react-signalr";
-import Chat from "./Chat";
 import { NewChat } from "./NewChat";
 export const SignalRContext = createSignalRContext();
 
